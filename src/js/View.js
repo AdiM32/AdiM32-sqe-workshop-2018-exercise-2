@@ -1,50 +1,33 @@
 import {model} from './Model';
 
-function buildTable() {
-    let table = document.getElementById('view_table');
-    createTableHead(table);
-    createTableBody(table);
-    document.body.appendChild(table);
+function buildView() {
+    model.forEach(do_this);
 }
 
-function createTableHead(table) {
-    let tableHead = document.createElement('thead');
-    let tr = document.createElement('tr');
-    let headlines = ['Line', 'Type', 'Name', 'Condition', 'Value'];
-    headlines.forEach((element) => {
-        let th = document.createElement('th');
-        th.innerHTML = element;
-        tr.appendChild(th);});
-    tableHead.appendChild(tr);
-    table.appendChild(tableHead);
+function do_this(x) {
+    let view = document.getElementById('view');
+
+    let red_div = document.createElement('div');
+    red_div.setAttribute('class', 'red_code');
+    red_div.appendChild(document.createTextNode('red text'));
+    view.appendChild(red_div);
+
+    let green_div = document.createElement('div');
+    green_div.setAttribute('class', 'green_code');
+    green_div.appendChild(document.createTextNode('green text'));
+    view.appendChild(green_div);
+
+    let black_div = document.createElement('div');
+    black_div.setAttribute('class','black_code');
+    black_div.appendChild(document.createTextNode('black text'));
+    view.appendChild(black_div);
+    x = 0;
+    return x;
 }
 
-function createTableBody(table) {
-    let tableBody = document.createElement('tbody');
-    model.forEach((model_row) => cerateRow(model_row, tableBody));
-    table.appendChild(tableBody);
+function clearView() {
+    let view = document.getElementById('view');
+    view.innerHTML = '';
 }
 
-function cerateRow(model_row, tableBody) {
-    let row = document.createElement('tr');
-    createCell(model_row.Line, row);
-    createCell(model_row.Type, row);
-    createCell(model_row.Name, row);
-    createCell(model_row.Condition, row);
-    createCell(model_row.Value, row);
-    tableBody.appendChild(row);
-}
-
-function createCell(cell_date, row) {
-    let cell = document.createElement('td');
-    cell.appendChild(document.createTextNode(cell_date));
-    row.appendChild(cell);
-}
-
-function clearTable() {
-    let table = document.getElementById('view_table');
-    // table.clean();
-    table.innerHTML = '';
-}
-
-export {buildTable, clearTable};
+export {buildView, clearView};

@@ -1,16 +1,15 @@
 import $ from 'jquery';
 import {parseCode} from './code-analyzer';
-import {clearModel, buildModel, model} from './Model';
-import {clearTable, buildTable} from './View';
+import {clearModel, buildModel} from './Model';
+import {clearView, buildView} from './View';
 
 $(document).ready(function () {
     $('#codeSubmissionButton').click(() => {
         let codeToParse = $('#codePlaceholder').val();
         let parsedCode = parseCode(codeToParse);
         clearModel();
-        clearTable();
+        clearView();
         buildModel(parsedCode);
-        buildTable();
-        $('#parsedCode').val(JSON.stringify(model, null, 2));
+        buildView();
     });
 });

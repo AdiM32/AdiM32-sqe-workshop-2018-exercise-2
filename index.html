@@ -18,6 +18,23 @@
                 width: 80%;
                 height: 95%;
             }
+            .red_code {
+                background: red;
+                color: white;
+                background-clip: content-box;
+            }
+
+            .green_code {
+                background: green;
+                color: white;
+                background-clip: content-box;
+            }
+
+            .black_code {
+                background: white;
+                color: black;
+                background-clip: content-box;
+            }
         </style>
     </head>
     <body>
@@ -34,16 +51,13 @@
                     </div>
                 </td>
             </tr>
-            <tr>
+            <tr id="th for view">
                 <td>
                     <div class="textAreaWrapper">
                         <textarea id="codePlaceholder" title="Enter code here"></textarea>
                     </div>
                 </td>
-                <td>
-                    <div class="textAreaWrapper">
-                        <textarea id="parsedCode" title="Parse code"></textarea>
-                    </div>
+                <td id="view">
                 </td>
             </tr>
             <tr>
@@ -53,14 +67,6 @@
                     </div>
                 </td>
                 <td>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div>
-                        <table id="view_table">
-                        </table>
-                    </div>
                 </td>
             </tr>
         </table>
