@@ -26,39 +26,34 @@
 The input:
 
 ```javascript
-function binarySearch(X, V, n){
-    let low, high, mid;
-    low = 0;
-    high = n - 1;
-    while (low <= high) {
-        mid = (low + high)/2;
-        if (X < V[mid])
-            high = mid - 1;
-        else if (X > V[mid])
-            low = mid + 1;
-        else
-            return mid;
+function foo(x, y, z){
+    let a = x + 1;
+    let b = a + y;
+    let c = 0;
+    
+    if (b < z) {
+        c = c + 5;
+        return x + y + z + c;
+    } else if (b < z * 2) {
+        c = c + x + 5;
+        return x + y + z + c;
+    } else {
+        c = c + z + 5;
+        return x + y + z + c;
     }
-    return -1;
 }
 ```
 
 Should produce:
 
-Line | Type | Name | Condition | Value
---- | --- | --- | --- | ---
-1 | function declaration | binarySearch 
-1 | variable declaration | X
-1 | variable declaration | V
-... | ... | ... | ... | ...
-2 | variable declaration | low | | null (or nothing)
-... | ... | ... | ... | ...
-3 | assignment expression | low | | 0
-4 | assignment expression | high | | n - 1
-5 | while statement | | low <= high | 
-... | ... | ... | ... | ...
-7 | if statement | | X < V[mid] |
-... | ... | ... | ... | ... 
-9 | else if statement | | X > V[mid] |
-... | ... | ... | ... | ... 
-12 | return statement | | | mid
+```javascript
+function foo(x, y, z){
+    if (x + 1 + y < z) {                //this line is red
+        return x + y + z + 5;
+    } else if (x + 1 + y < z * 2) {     //this line is green
+        return x + y + z + x + 5; 
+    } else {                            //this line is red
+        return x + y + z + z + 5;
+    }
+}
+```
