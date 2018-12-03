@@ -2,6 +2,7 @@ import $ from 'jquery';
 import {parseCode} from './code-analyzer';
 import {clearVars, symbolicSubstitution} from './SymbolicSubstitution(';
 import {clearView, buildView} from './View';
+import {lines, evaluate} from './Evaluate';
 
 $(document).ready(function () {
     $('#codeSubmissionButton').click(() => {
@@ -10,6 +11,7 @@ $(document).ready(function () {
         clearVars();
         clearView();
         let program = symbolicSubstitution(parsedCode);
-        buildView(program.toString());
+        evaluate(program);
+        buildView(lines.toString());
     });
 });

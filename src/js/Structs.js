@@ -9,5 +9,7 @@ const Call = buildStruct('type', 'collee', 'args');
 const Assignment = buildStruct('type', 'left', 'op', 'right');
 const Return = buildStruct('type', 'argument');
 
+const Line = buildStruct('string', 'color', 'tabs');
 
-export {Var, Program, Function, If, Call, Assignment, Return};
+
+export {Var, Program, Function, If, Call, Assignment, Return, Line};
