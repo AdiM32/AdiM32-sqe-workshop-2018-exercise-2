@@ -1,15 +1,15 @@
 import $ from 'jquery';
 import {parseCode} from './code-analyzer';
-import {clearModel, buildModel} from './Model';
+import {clearVars, symbolicSubstitution} from './Model';
 import {clearView, buildView} from './View';
 
 $(document).ready(function () {
     $('#codeSubmissionButton').click(() => {
         let codeToParse = $('#codePlaceholder').val();
         let parsedCode = parseCode(codeToParse);
-        clearModel();
+        clearVars();
         clearView();
-        buildModel(parsedCode);
-        buildView();
+        let program = symbolicSubstitution(parsedCode);
+        buildView(program.toString());
     });
 });

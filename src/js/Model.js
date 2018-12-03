@@ -1,96 +1,72 @@
-let model = [];
+import {Var, Program, Function, If, Call, Assignment, Return} from './Structs';
+
 let vars = [];
-const buildStruct = (...keys) => ((...values) => keys.reduce((obj, key, i) => {obj[key] = values[i]; return obj;} , {}));
-const Row = buildStruct('Line', 'Type', 'Name', 'Condition', 'Value');
-const Var = buildStruct('name', 'value', 'isLocal');
+let substitute = false;
 
+const type_func = {'Program': (pc) => Program('Program', subBody(pc.body)),
+    'FunctionDeclaration': (pc) => subFunctionDeclaration(pc.id.name, pc.body.body, pc.params),
+    'VariableDeclaration': (pc) => subVariableDeclaration(pc.declarations),
+    'IfStatement': (pc) => subIfStatement('If', pc.test, pc.consequent, pc.alternate),
+    'ElseIfStatement': (pc) => subIfStatement('ElseIf', pc.test, pc.consequent, pc.alternate),
+    'BlockStatement': (pc) => subBody(pc.body),
+    'CallExpression': (pc) => subCallExpression(pc.callee, pc.arguments),
+    'ExpressionStatement': (pc) => symbolicSubstitution(pc.expression),
+    'AssignmentExpression': (pc) => subAssignmentExpression(pc.left, pc.operator, pc.right),
+    'ReturnStatement': (pc) => subReturnStatement(pc.argument)};
 
-const type_func = {'Program': (pc) => parseBody(pc.body),
-    'FunctionDeclaration': (pc) => parseFunctionDeclaration(pc.loc.start.line, pc.params, pc.id.name, pc.body),
-    'BlockStatement': (pc) => parseBody(pc.body),
-    'VariableDeclaration': (pc) => parseVariableDeclaration(pc.declarations),
-    'ExpressionStatement': (pc) => buildModel(pc.expression),
-    'AssignmentExpression': (pc) => parseAssignmentExpression(pc.left, pc.right, pc.loc.start.line),
-    'WhileStatement': (pc) => parseWhileStatement(pc.test, pc.body, pc.loc.start.line),
-    'IfStatement': (pc) => parsedIfStatement(pc.loc.start.line, pc.type, pc.test, pc.consequent, pc.alternate),
-    'ElseIfStatement': (pc) => parsedIfStatement(pc.loc.start.line, pc.type, pc.test, pc.consequent, pc.alternate),
-    'ReturnStatement': (pc) => parsedReturnStatement(pc.loc.start.line, pc.argument),
-    'ForStatement': (pc) => parseForStatement(pc.loc.start.line, pc.body, pc.init, pc.test, pc.update)};
-
-const sideType_func = {'Identifier': (s) => {return s.name;},
-    'Literal': (s) => {return s.raw;},
-    'BinaryExpression': (s) => {return '(' + parseBinaryExpression(s) + ')';},
-    'MemberExpression': (s) => {return s.object.name + '[' + pareOneSide(s.property) + ']';},
-    'UnaryExpression': (s) =>  {return s.operator + pareOneSide(s.argument);},
-    'UpdateExpression': (s) => {return s.argument.name + s.operator;}};
-
-const type_func_sub = {'VariableDeclaration': (pc) => subVariableDeclaration(pc.declarations),
-    'IfStatement': (pc) => subIfStatement(pc.test, pc.consequent, pc.alternate)};
-
-const sideType_func_sub = {'Identifier': (s) => subIdentifier(s),
+const sideType_func = {'Identifier': (s) => subIdentifier(s),
     'Literal': (s) => {return s.raw;},
     'BinaryExpression': (s) => {return '(' + subBinaryExpression(s) + ')';},
     'MemberExpression': (s) => {return s.object.name + '[' + subOneSide(s.property) + ']';},
     'UnaryExpression': (s) =>  {return s.operator + subOneSide(s.argument);},
     'UpdateExpression': (s) => {return s.argument.name + s.operator;}};
 
+function symbolicSubstitution(parsedCode) {
+    if (parsedCode.type in type_func){
+        return type_func[parsedCode.type](parsedCode);
+    }
+    return [];
+}
+
+function subBody(body) {
+    let newBody = [];
+    body.forEach((b) => {
+        let res = symbolicSubstitution(b);
+        if (res === '' || (Array.isArray(res) && res.length === 0)) {
+            return;
+        }
+        newBody.push(res);});
+    return newBody;
+}
+
+function subFunctionDeclaration(name, body, params) {
+    let paramsNames = [];
+    params.forEach((p) => {paramsNames.push(p.name); vars.push(Var(p.name, '', false));});
+    substitute = true;
+    let newBody = subBody(body);
+    return Function('Function', name, newBody, paramsNames);
+}
+
 function subIdentifier(s) {
     let res = s.name;
-    vars.forEach((v) => {if (v.name === s.name && v.isLocal){res = v.value;}});
+    vars.forEach((v) => {if (substitute && v.name === s.name && v.isLocal){res = v.value;}});
     return res;
 }
 
-function buildModel(parsedCode) {
-    if (parsedCode.type in type_func){
-        type_func[parsedCode.type](parsedCode);
-    }
-}
-
-function parseBody(body) {
-    body.forEach((element) => buildModel(element));
-}
-
-function parseFunctionDeclaration(line, params, name, body) {
-    let paramsNames = parseParam(params);
-    symbolicSubstitution(body.body, paramsNames);
-}
-
-function symbolicSubstitution(body, prams) {
-    body.forEach((b) => {if (b.type in type_func_sub){type_func_sub[b.type](b);}});
-    return body + prams;
-}
-
-function parseParam(params) {
-    let paramsNames = [];
-    params.forEach((param) => {paramsNames.push(param.name); vars.push(Var(param.name, null, false));});
-    return paramsNames;
-}
-
-function parseVariableDeclaration(declarations) {
-    declarations.forEach((element) => {
-        model.push(Row(element.loc.start.line, 'variable declaration', element.id.name, '' ,
-            element.init === null? 'null (or nothing)': pareOneSide(element.init)));
-    });
-}
-
 function subVariableDeclaration(declarations) {
+    let _vars = [];
     declarations.forEach((element) => {
-        vars.push(Var(element.id.name, element.init === null? null : subOneSide(element.init), true));
+        let _var = Var(element.id.name, element.init === null? null : subOneSide(element.init), substitute);
+        vars.push(_var);
+        if (!substitute){
+            _vars.push(_var);
+        }
     });
-}
-
-function pareOneSide(side) {
-    return sideType_func[side.type](side);
+    return _vars;
 }
 
 function subOneSide(side) {
-    return sideType_func_sub[side.type](side);
-}
-
-function parseBinaryExpression(binaryExpression) {
-    return pareOneSide(binaryExpression.left) + ' ' +
-        binaryExpression.operator + ' ' +
-        pareOneSide(binaryExpression.right);
+    return sideType_func[side.type](side);
 }
 
 function subBinaryExpression(binaryExpression) {
@@ -99,55 +75,44 @@ function subBinaryExpression(binaryExpression) {
         subOneSide(binaryExpression.right);
 }
 
-function parseWhileStatement(test, body, line) {
-    model.push(Row(line, 'while statement', '', parseBinaryExpression(test), ''));
-    buildModel(body);
-}
-
-function parseAssignmentExpression(left, right, line) {
-    model.push(Row(line, 'assignment expression', left.name, '', find_init(right)));
-}
-
-function parsedIfStatement(line, type, test, consequent, alternate) {
-    model.push(Row(line, type[0] === 'E'? 'else if statement': 'if statement', '', parseBinaryExpression(test), ''));
-    buildModel(consequent);
+function subIfStatement(type, test, consequent, alternate) {
+    let _test = subBinaryExpression(test);
+    let save_vars = JSON.parse(JSON.stringify(vars));
+    let _then = symbolicSubstitution(consequent);
+    vars = JSON.parse(JSON.stringify(save_vars));
+    let _else;
     if (alternate !== null) {
         if (alternate.type === 'IfStatement') {
             alternate.type = 'ElseIfStatement';
         }
-        buildModel(alternate);
+        _else = symbolicSubstitution(alternate);
     }
+    return If(type, _test, _then, _else);
 }
 
-function subIfStatement(test, consequent, alternate) {
-    let sub_test = subBinaryExpression(test);
-    buildModel(consequent);
-    if (alternate !== null) {
-        if (alternate.type === 'IfStatement') {
-            alternate.type = 'ElseIfStatement';
-        }
-        buildModel(alternate);
-    }
+function subCallExpression(callee, args) {
+    let _args = [];
+    args.forEach((arg) => _args.push(subOneSide(arg)));
+    return Call('Call', callee.name , _args);
 }
 
-function parsedReturnStatement(line, argument) {
-    model.push(Row(line, 'return statement', '', '', pareOneSide(argument)));
+function subAssignmentExpression(left, operator, right) {
+    let _left = left.name;
+    let _right = subOneSide(right);
+    vars.forEach((v) => {if (v.name === _left){
+        v.value = _right;
+        if(!v.isLocal){
+            return Assignment('Assignment', _left, operator, _right);
+        }}});
+    return [];
 }
 
-function find_init(init) {
-    if (init.type === 'Literal')
-        return init.raw;
-    return parseBinaryExpression(init);
+function subReturnStatement(argument) {
+    return Return('Return', subOneSide(argument));
 }
 
-function parseForStatement(line, body, init, test, update) {
-    let Condition = init.declarations[0].id.name + ' = ' + pareOneSide(init.declarations[0].init) + '; ' +
-        parseBinaryExpression(test) + '; ' + pareOneSide(update);
-    model.push(Row(line, 'for statement', '', Condition, ''));
-    buildModel(body);
+function clearVars() {
+    vars = [];
+    substitute = false;
 }
-function clearModel() {
-    model = [];
-}
-
-export {buildModel, clearModel, model};
+export {symbolicSubstitution, clearVars};

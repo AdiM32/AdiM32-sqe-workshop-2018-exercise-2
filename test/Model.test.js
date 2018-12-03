@@ -1,9 +1,9 @@
 import assert from 'assert';
 import {parseCode} from '../src/js/code-analyzer';
-import {model, buildModel, clearModel} from '../src/js/Model';
+import {model, symbolicSubstitution, clearModel} from '../src/js/Model';
 
 function test_Struct(test, result){
-    buildModel(parseCode(test));
+    symbolicSubstitution(parseCode(test));
     assert.equal(JSON.stringify(model), JSON.stringify(result));
     clearModel();
 }
