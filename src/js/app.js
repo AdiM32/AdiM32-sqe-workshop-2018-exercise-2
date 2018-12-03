@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import {parseCode} from './code-analyzer';
-import {clearVars, symbolicSubstitution} from './Model';
+import {clearVars, symbolicSubstitution} from './SymbolicSubstitution(';
 import {clearView, buildView} from './View';
 
 $(document).ready(function () {
