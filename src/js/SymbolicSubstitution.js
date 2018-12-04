@@ -101,7 +101,7 @@ function subAssignmentExpression(left, operator, right) {
     let res = [];
     vars.forEach((v) => {if (v.name === _left){
         v.value = _right;
-        if(!v.isLocal){
+        if(substitute && !v.isLocal){
             res = Assignment('Assignment', _left, operator, _right);
         }}});
     return res;

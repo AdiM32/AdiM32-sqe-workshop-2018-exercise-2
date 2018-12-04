@@ -56,3 +56,14 @@ describe('no substituted ', () =>{
             'args': [1, 'x', 3.17]}]});
     });
 });
+
+describe('no substituted ', () =>{
+    it('should not substituted x and y outside of foo', () => {
+        test_Struct('function foo(x, y){\n\tlet a = x + 1;\n\t\n\tif(a > y) {\n\t\tx = 4;\n\t}\n\tx = x + 1;\t\n' +
+            '\treturn x;\n}\nlet x = 2;\nlet y;\ny = 5;\nfoo(y, x);', {'type': 'Program', 'body': [{'type': 'Function',
+            'name': 'foo', 'body': [{'type': 'If', 'test': '(x + 1) > y', 'then': [{'type': 'Assignment', 'left': 'x',
+                'op': '=', 'right': 4}]}, {'type': 'Assignment', 'left': 'x', 'op': '=', 'right': '(x + 1)'},
+            {'type': 'Return', 'argument': 'x'}], 'params': ['x', 'y']}, {'type': 'Call', 'collee': 'foo',
+            'args': ['y', 'x']}]});
+    });
+});

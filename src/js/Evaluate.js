@@ -1,5 +1,4 @@
 import {Var, Line} from './Structs';
-import {out_vars} from "./SymbolicSubstitution";
 
 let tabs = 0;
 let lines = [];
@@ -18,10 +17,7 @@ const type_func = {'Program': (p) => evaluateBody(p.body),
 
 
 function evaluate(program) {
-    if (program.type in type_func){
-        return type_func[program.type](program);
-    }
-    return [];
+    return type_func[program.type](program);
 }
 
 function evaluateBody(body) {
@@ -137,7 +133,7 @@ function getValue(name) {
 
 function evaluateWhile(test, body) {
     let isTrue = evaluatePred(test);
-    let color = isTrue? 'green':'red';
+    let color = isTrue? 'green' : 'red';
     lines.push(Line('while (' + test + '){', color, tabs));
     tabs++;
     evaluateBody(body);
