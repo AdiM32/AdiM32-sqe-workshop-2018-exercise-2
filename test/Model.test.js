@@ -1,6 +1,6 @@
 import assert from 'assert';
 import {parseCode} from '../src/js/code-analyzer';
-import {model, symbolicSubstitution, clearModel} from '../src/js/Model';
+import {model, symbolicSubstitution, clearModel} from '../src/js/SymbolicSubstitution(';
 
 function test_Struct(test, result){
     symbolicSubstitution(parseCode(test));

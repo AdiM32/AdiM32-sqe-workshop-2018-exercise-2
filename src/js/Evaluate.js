@@ -4,7 +4,7 @@ let tabs = 0;
 let lines = [];
 let inputVector = [];
 
-const char_to_keep = ['(', ')', '+', '-', '=', '<', '>', '*', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+const char_to_keep = ['(', ')', '[', ']', '+', '-', '=', '<', '>', '*', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
 const type_func = {'Program': (p) => evaluateBody(p.body),
     'Function': (p) => inputVector.push(Var(p.name, [p.params, p.body], false)),
@@ -89,10 +89,26 @@ function evaluatePred(pred){
         }
         else {
             let j = findEndOfName(pred, i);
-            temp += getValue(pred.substr(i, j-i));
+            let val = getValue(pred.substr(i, j-i));
+            val = fixVal(val);
+            i = j - 1;
+            temp += val;
         }
     }
     return eval(temp);
+}
+
+function fixVal(val) {
+    let res = '';
+    if (Array.isArray(val)){
+        res += '[';
+        val.forEach((e) => res += fixVal(e) + ', ');
+        res = res.substr(0, res.length - 2) + ']';
+    } else if (typeof val === 'string'){
+        res += '"' + val + '"';
+    } else
+        res = val;
+    return res;
 }
 
 function toKeep(char) {
@@ -103,7 +119,7 @@ function toKeep(char) {
 function findEndOfName(string, i) {
     let j = i + 1;
     let string_j = string[j];
-    while (j < string.length && string_j !== ' ' && string_j !== ')') {
+    while (j < string.length && string_j !== ' ' && string_j !== ')' && string_j !== '[') {
         j++;
         string_j = string[j];
     }

@@ -3,6 +3,7 @@ import {Var, Program, Function, If, Call, Assignment, Return, While} from './Str
 let vars = [];
 let substitute = false;
 
+// noinspection JSAnnotator
 const type_func = {'Program': (pc) => Program('Program', subBody(pc.body)),
     'FunctionDeclaration': (pc) => subFunctionDeclaration(pc.id.name, pc.body.body, pc.params),
     'VariableDeclaration': (pc) => subVariableDeclaration(pc.declarations),
@@ -16,8 +17,10 @@ const type_func = {'Program': (pc) => Program('Program', subBody(pc.body)),
     'WhileStatement': (pc) => subWhileStatement(pc.test, pc.body)};
 
 const sideType_func = {'Identifier': (s) => subIdentifier(s),
-    'Literal': (s) => {return s.raw;},
-    'BinaryExpression': (s) => {return '(' + subBinaryExpression(s) + ')';}};
+    'Literal': (s) => {return s.value;},
+    'BinaryExpression': (s) => {return '(' + subBinaryExpression(s) + ')';},
+    'MemberExpression': (s) => {return s.object.name + '[' + subOneSide(s.property) + ']';},
+    'ArrayExpression': (s) => subArrayExpression(s.elements)};
 
 function symbolicSubstitution(parsedCode) {
     if (parsedCode.type in type_func){
@@ -112,8 +115,14 @@ function subReturnStatement(argument) {
 
 function subWhileStatement(test, body) {
     let _test = subBinaryExpression(test);
-    let _body = symbolicSubstitution(body)
+    let _body = symbolicSubstitution(body);
     return While('While', _test, _body);
+}
+
+function subArrayExpression(elements) {
+    let _elements = [];
+    elements.forEach((e) => _elements.push(subOneSide(e)));
+    return _elements;
 }
 
 function clearVars() {
