@@ -1,4 +1,5 @@
 import {Var, Line} from './Structs';
+import {out_vars} from "./SymbolicSubstitution";
 
 let tabs = 0;
 let lines = [];
@@ -50,7 +51,7 @@ function evaluateIf(test, then, _else) {
     evaluateBody(then);
     tabs--;
     lines.push(Line('}', 'black', tabs));
-    if (_else !== null){
+    if (_else !== null && _else !== undefined){
         lines.push(Line('else {', 'black', tabs));
         tabs++;
         Array.isArray(_else)? evaluateBody(_else) : evaluate(_else);
@@ -149,4 +150,8 @@ function clearEvaluator() {
     inputVector = [];
 }
 
-export {evaluate, lines, clearEvaluator};
+function initIV(out_vars) {
+    inputVector = JSON.parse(JSON.stringify(out_vars));
+}
+
+export {evaluate, lines, clearEvaluator, initIV};

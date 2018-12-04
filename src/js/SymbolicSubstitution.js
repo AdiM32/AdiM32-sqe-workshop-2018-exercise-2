@@ -1,6 +1,7 @@
 import {Var, Program, Function, If, Call, Assignment, Return, While} from './Structs';
 
 let vars = [];
+let out_vars = [];
 let substitute = false;
 
 // noinspection JSAnnotator
@@ -23,10 +24,7 @@ const sideType_func = {'Identifier': (s) => subIdentifier(s),
     'ArrayExpression': (s) => subArrayExpression(s.elements)};
 
 function symbolicSubstitution(parsedCode) {
-    if (parsedCode.type in type_func){
-        return type_func[parsedCode.type](parsedCode);
-    }
-    return [];
+    return type_func[parsedCode.type](parsedCode);
 }
 
 function subBody(body) {
@@ -45,6 +43,7 @@ function subFunctionDeclaration(name, body, params) {
     params.forEach((p) => {paramsNames.push(p.name); vars.push(Var(p.name, '', false));});
     substitute = true;
     let newBody = subBody(body);
+    substitute = false;
     return Function('Function', name, newBody, paramsNames);
 }
 
@@ -55,15 +54,14 @@ function subIdentifier(s) {
 }
 
 function subVariableDeclaration(declarations) {
-    let _vars = [];
     declarations.forEach((element) => {
         let _var = Var(element.id.name, element.init === null? null : subOneSide(element.init), substitute);
         vars.push(_var);
         if (!substitute){
-            _vars.push(_var);
+            out_vars.push(_var);
         }
     });
-    return _vars;
+    return [];
 }
 
 function subOneSide(side) {
@@ -127,6 +125,7 @@ function subArrayExpression(elements) {
 
 function clearVars() {
     vars = [];
+    out_vars = [];
     substitute = false;
 }
-export {symbolicSubstitution, clearVars};
+export {symbolicSubstitution, clearVars, out_vars};
