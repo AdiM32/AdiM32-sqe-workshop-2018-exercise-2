@@ -1,30 +1,22 @@
-import {model} from './Model';
-
-function buildView() {
-    model.forEach(do_this);
-}
-
-function do_this(x) {
+function buildView(lines) {
     let view = document.getElementById('view');
-
-    let red_div = document.createElement('div');
-    red_div.setAttribute('class', 'red_code');
-    red_div.appendChild(document.createTextNode('red text'));
-    view.appendChild(red_div);
-
-    let green_div = document.createElement('div');
-    green_div.setAttribute('class', 'green_code');
-    green_div.appendChild(document.createTextNode('green text'));
-    view.appendChild(green_div);
-
-    let black_div = document.createElement('div');
-    black_div.setAttribute('class','black_code');
-    black_div.appendChild(document.createTextNode('black text'));
-    view.appendChild(black_div);
-    x = 0;
-    return x;
+    lines.forEach((line) => buildLine(view, line.string, line.color, line.tabs));
 }
 
+function buildLine(view, string, color, tabs) {
+    let div = document.createElement('div');
+    div.setAttribute('class',color + '_code');
+    div.appendChild(document.createTextNode(makeTabs(tabs) + string));
+    view.appendChild(div);
+}
+
+function makeTabs(tabs) {
+    let res = '';
+    for (let i = 0; i<tabs; i++){
+        res += '\t';
+    }
+    return res;
+}
 function clearView() {
     let view = document.getElementById('view');
     view.innerHTML = '';

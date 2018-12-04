@@ -1,4 +1,4 @@
-import {Var, Program, Function, If, Call, Assignment, Return} from './Structs';
+import {Var, Program, Function, If, Call, Assignment, Return, While} from './Structs';
 
 let vars = [];
 let substitute = false;
@@ -12,14 +12,12 @@ const type_func = {'Program': (pc) => Program('Program', subBody(pc.body)),
     'CallExpression': (pc) => subCallExpression(pc.callee, pc.arguments),
     'ExpressionStatement': (pc) => symbolicSubstitution(pc.expression),
     'AssignmentExpression': (pc) => subAssignmentExpression(pc.left, pc.operator, pc.right),
-    'ReturnStatement': (pc) => subReturnStatement(pc.argument)};
+    'ReturnStatement': (pc) => subReturnStatement(pc.argument),
+    'WhileStatement': (pc) => subWhileStatement(pc.test, pc.body)};
 
 const sideType_func = {'Identifier': (s) => subIdentifier(s),
     'Literal': (s) => {return s.raw;},
-    'BinaryExpression': (s) => {return '(' + subBinaryExpression(s) + ')';},
-    'MemberExpression': (s) => {return s.object.name + '[' + subOneSide(s.property) + ']';},
-    'UnaryExpression': (s) =>  {return s.operator + subOneSide(s.argument);},
-    'UpdateExpression': (s) => {return s.argument.name + s.operator;}};
+    'BinaryExpression': (s) => {return '(' + subBinaryExpression(s) + ')';}};
 
 function symbolicSubstitution(parsedCode) {
     if (parsedCode.type in type_func){
@@ -99,16 +97,23 @@ function subCallExpression(callee, args) {
 function subAssignmentExpression(left, operator, right) {
     let _left = left.name;
     let _right = subOneSide(right);
+    let res = [];
     vars.forEach((v) => {if (v.name === _left){
         v.value = _right;
         if(!v.isLocal){
-            return Assignment('Assignment', _left, operator, _right);
+            res = Assignment('Assignment', _left, operator, _right);
         }}});
-    return [];
+    return res;
 }
 
 function subReturnStatement(argument) {
     return Return('Return', subOneSide(argument));
+}
+
+function subWhileStatement(test, body) {
+    let _test = subBinaryExpression(test);
+    let _body = symbolicSubstitution(body)
+    return While('While', _test, _body);
 }
 
 function clearVars() {

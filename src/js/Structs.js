@@ -8,8 +8,8 @@ const If = buildStruct('type', 'test', 'then', 'else');
 const Call = buildStruct('type', 'collee', 'args');
 const Assignment = buildStruct('type', 'left', 'op', 'right');
 const Return = buildStruct('type', 'argument');
-
+const While = buildStruct('type', 'test', 'body');
 const Line = buildStruct('string', 'color', 'tabs');
 
 
-export {Var, Program, Function, If, Call, Assignment, Return, Line};
+export {Var, Program, Function, If, Call, Assignment, Return, While, Line};
